@@ -11,7 +11,11 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
+def _plot_series(y: pd.Series, title: str):
+    st.subheader(title)
+    dfp = y.dropna().to_frame(name=title)
+    st.line_chart(dfp)
+
 
 # =============================
 # Utilities
@@ -894,19 +898,12 @@ def run():
                 freq_entry = wf["selected_entry_th"].value_counts().sort_index()
                 freq_hedge = wf["selected_hedge_th"].value_counts().sort_index()
 
-                fig1 = plt.figure()
-                plt.bar(freq_entry.index.astype(str), freq_entry.values)
-                plt.title("Selected entry_th Frequency")
-                plt.xlabel("entry_th")
-                plt.grid(True, axis="y")
-                st.pyplot(fig1)
+            st.subheader("Selected entry_th Frequency")
+st.bar_chart(freq_entry)
 
-                fig2 = plt.figure()
-                plt.bar(freq_hedge.index.astype(str), freq_hedge.values)
-                plt.title("Selected hedge_th Frequency")
-                plt.xlabel("hedge_th")
-                plt.grid(True, axis="y")
-                st.pyplot(fig2)
+st.subheader("Selected hedge_th Frequency")
+st.bar_chart(freq_hedge)
+
 
                 oos = {
                     "OOS Sharpe (median)": float(wf["test_Sharpe"].median()),
