@@ -858,13 +858,13 @@ def run():
             mime="text/csv"
         )
 
-    with tabs[5]:
+       with tabs[5]:
         st.subheader("Walk-Forward Validation & Parameter Stability")
 
         if not wf_enable:
             st.info("Enable walk-forward in the sidebar to compute stability report.")
         else:
-            # small but meaningful grid around current values
+            # Small grid around current values
             entry_vals = [round(x, 2) for x in np.arange(entry_th - 0.5, entry_th + 0.51, 0.25)]
             hedge_vals = [round(x, 2) for x in np.arange(hedge_th - 0.5, hedge_th + 0.51, 0.25)]
             param_grid = [{"entry_th": e, "hedge_th": h} for e in entry_vals for h in hedge_vals]
@@ -891,31 +891,33 @@ def run():
 
             if wf.empty:
                 st.warning("Not enough data to run walk-forward (need ~400+ daily rows).")
-            else:
-                st.dataframe(wf)
+                return
 
-                st.write("Parameter stability (selection frequency):")
-                freq_entry = wf["selected_entry_th"].value_counts().sort_index()
-                freq_hedge = wf["selected_hedge_th"].value_counts().sort_index()
+            st.write("Walk-forward windows and selected parameters:")
+            st.dataframe(wf, use_container_width=True)
 
-            st.subheader("Selected entry_th Frequency")
-st.bar_chart(freq_entry)
+            st.subheader("Parameter stability (selection frequency)")
+            freq_entry = wf["selected_entry_th"].value_counts().sort_index()
+            freq_hedge = wf["selected_hedge_th"].value_counts().sort_index()
 
-st.subheader("Selected hedge_th Frequency")
-st.bar_chart(freq_hedge)
+            st.write("Selected entry_th frequency")
+            st.bar_chart(freq_entry)
 
+            st.write("Selected hedge_th frequency")
+            st.bar_chart(freq_hedge)
 
-                oos = {
-                    "OOS Sharpe (median)": float(wf["test_Sharpe"].median()),
-                    "OOS MaxDD (median)": float(wf["test_MaxDD"].median()),
-                    "OOS CAGR (median)": float(wf["test_CAGR"].median()),
-                    "OOS windows": int(len(wf)),
-                }
-                st.write(oos)
+            st.subheader("Out-of-sample performance summary (median)")
+            oos = {
+                "OOS Sharpe (median)": float(wf["test_Sharpe"].median()),
+                "OOS MaxDD (median)": float(wf["test_MaxDD"].median()),
+                "OOS CAGR (median)": float(wf["test_CAGR"].median()),
+                "OOS windows": int(len(wf)),
+            }
+            st.json(oos)
 
-                st.download_button(
-                    "Download Walk-Forward Results (CSV)",
-                    data=wf.to_csv(index=False).encode("utf-8"),
-                    file_name="walk_forward_stability_report.csv",
-                    mime="text/csv"
-                )
+            st.download_button(
+                "Download Walk-Forward Results (CSV)",
+                data=wf.to_csv(index=False).encode("utf-8"),
+                file_name="walk_forward_stability_report.csv",
+                mime="text/csv"
+            )
